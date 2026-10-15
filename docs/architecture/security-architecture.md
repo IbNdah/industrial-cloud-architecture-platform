@@ -4,9 +4,7 @@
 **Version:** 0.1.0
 
 ## 1. Purpose
-git add docs/architecture/security-architecture.md
-git commit -m "docs: define industrial security architecture"
-git push
+
 Define the security boundaries and minimum controls for collecting industrial telemetry and forwarding it to Azure.
 
 The initial implementation uses simulated industrial equipment. Production deployment requires an environment-specific security assessment.
@@ -14,7 +12,7 @@ The initial implementation uses simulated industrial equipment. Production deplo
 ## 2. Security Zones
 
 | Zone | Components | Security objective |
-|---|---|---|
+| --- | --- | --- |
 | OT | Assets, PLCs, SCADA/HMI, OPC UA Server | Protect local control and limit access to industrial systems |
 | Industrial DMZ | Firewall and controlled communication paths | Restrict traffic between OT and external networks |
 | Edge | Industrial Edge Gateway and local SQLite buffer | Protect device identity, data, and local processing |
@@ -23,7 +21,7 @@ The initial implementation uses simulated industrial equipment. Production deplo
 ## 3. Required Controls
 
 | ID | Control | Implementation approach |
-|---|---|---|
+| --- | --- | --- |
 | SEC-01 | Network segmentation | Separate OT, Industrial DMZ, and cloud communication paths |
 | SEC-02 | No direct cloud-to-PLC control path | Permit telemetry flows only; do not expose PLC control interfaces to Azure |
 | SEC-03 | Encrypted Edge-to-cloud communication | Use MQTT over authenticated TLS |
@@ -38,7 +36,7 @@ The initial implementation uses simulated industrial equipment. Production deplo
 ## 4. Communication Rules
 
 | Source | Destination | Protocol | Rule |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Edge Gateway | OPC UA Server | OPC UA | Allow only the required read access |
 | Edge Gateway | Azure IoT Hub | MQTT over TLS | Outbound authenticated telemetry connection |
 | Azure Functions | PostgreSQL | PostgreSQL protocol over TLS | Allow only the required application connection |
@@ -59,7 +57,7 @@ Exact ports, firewall rules, DNS requirements, and routing must be defined durin
 ## 6. Edge and Container Security
 
 | Area | Minimum requirement |
-|---|---|
+| --- | --- |
 | Container image | Use a controlled base image and pinned dependencies |
 | Runtime privileges | Run without unnecessary privileges |
 | Configuration | Inject environment-specific configuration at deployment |
