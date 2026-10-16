@@ -21,23 +21,23 @@ Initial simulated assets:
 ## 🏗️ Architecture
 
 ```text
-Industrial Assets → PLC → SCADA/HMI → OPC UA Server
-                                      ↓
-                          Docker Edge Gateway
-                                      ↓
-                           SQLite Persistent Buffer
-                                      ↓ MQTT over TLS
-                         Industrial DMZ / Firewall
-                                      ↓
-                              Azure IoT Hub
-                                      ↓
-                            Azure Functions
-                                      ↓
-                    Azure Database for PostgreSQL
-                                      ↓
-                         DashboardService API
-                                      ↓
-                                   Grafana
+OT Zone
+  Industrial Assets → PLC / SCADA-HMI → OPC UA Server
+                                             ↑ OPC UA (read-only)
+Industrial DMZ                             Edge Gateway (Docker)
+                                             ↓ SQLite buffer
+                                             ↓ MQTT over TLS
+                                          Firewall
+                                             ↓
+Cloud Zone                              Azure IoT Hub
+                                             ↓
+                                       Azure Functions
+                                             ↓
+                                Azure Database for PostgreSQL
+                                             ↓
+                                     DashboardService API
+                                             ↓
+                                           Grafana
 ```
 
 Key design principles:
@@ -52,7 +52,7 @@ Key design principles:
 - Industrial OT and Edge integration
 - OPC UA and MQTT over TLS
 - Azure IoT Hub and event-driven processing with Azure Functions
-- PostgreSQL for operational telemetry and alarms
+- PostgreSQL for asset data, operational telemetry, and anomaly events
 - DashboardService API and Grafana
 - Industrial network segmentation and identity/security controls
 - Azure Enterprise Landing Zone integration
