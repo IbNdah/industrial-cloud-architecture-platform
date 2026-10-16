@@ -23,7 +23,7 @@ The mapping prioritizes reuse of existing Azure infrastructure patterns and avoi
 | Cloud ingestion | Azure IoT Hub | Authenticate Edge identities and ingest telemetry | Selected |
 | Event processing | Azure Functions | Validate telemetry and evaluate anomaly rules | Selected |
 | Operational database | Azure Database for PostgreSQL Flexible Server | Store telemetry, asset state and anomaly events | Selected |
-| Application API | Python-based DashboardService | Expose asset status, trends and anomaly information | Planned |
+| Application API | Python-based DashboardService hosted on Azure Functions | Expose asset status, trends and anomaly information | Planned |
 | Visualization | Grafana | Display asset health, trends and alerts | Selected |
 | Infrastructure as Code | Terraform | Provision cloud infrastructure reproducibly | Reuse |
 | CI/CD | GitHub Actions | Validate code and automate deployment | Reuse |
