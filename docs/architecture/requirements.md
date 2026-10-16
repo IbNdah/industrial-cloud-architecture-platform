@@ -19,7 +19,7 @@ Each requirement has a unique ID, a priority, and a verification criterion.
 | AR-04 | Edge-to-cloud communication must use TLS. | P0 | The configured cloud connection uses authenticated TLS. |
 | AR-05 | Each Edge Gateway must have an identifiable and revocable identity. | P0 | A gateway can be identified and its access revoked. |
 | AR-06 | The Edge Gateway must persist telemetry locally during cloud connectivity outages. | P0 | Messages remain queued after a simulated outage and gateway restart. |
-| AR-07 | Queued telemetry must be replayed after connectivity is restored. | P0 | Buffered messages are delivered after reconnection. |
+| AR-07 | Queued telemetry must be replayed after connectivity is restored. | P0 | Buffered messages are delivered after reconnection without creating duplicate logical records. |
 | AR-08 | Telemetry must be validated before processing. | P0 | Invalid schema, missing asset ID, or invalid timestamps are rejected or quarantined. |
 | AR-09 | Configured threshold violations must generate alarms. | P0 | Test telemetry exceeding a configured threshold produces an alarm. |
 | AR-10 | Edge and cloud processing failures must be observable. | P1 | Logs or metrics expose connectivity, queue, and processing errors. |
