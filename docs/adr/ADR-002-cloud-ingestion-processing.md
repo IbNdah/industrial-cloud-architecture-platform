@@ -20,8 +20,7 @@ The initial cloud processing architecture uses:
 - **DashboardService API** for application-facing queries.
 - **Grafana** for visualization.
 
-Telemetry will be routed from IoT Hub to the Azure Functions processing component using a supported event integration, such as the IoT Hub built-in Event Hubs-compatible endpoint.
-The exact trigger and routing configuration will be validated during implementation.
+Telemetry will be routed from IoT Hub to the Azure Functions processing component using the IoT Hub built-in Event Hubs-compatible endpoint and an Azure Functions Event Hub trigger.
 
 ## 3. Processing Responsibilities
 
