@@ -1,69 +1,97 @@
-
 # Industrial Cloud Architecture Platform
 
-## Overview
+## 🎯 Overview
 
-An industrial cloud architecture project demonstrating
-secure OT-to-cloud integration using Microsoft Azure.
+An Azure-based industrial IoT reference implementation demonstrating secure OT-to-cloud integration for industrial asset monitoring.
 
-The project extends an existing Azure IoT monitoring
-pipeline with industrial protocols, OT/IT security,
-enterprise cloud governance, and industrial asset modeling.
+The platform builds on an existing Azure IoT monitoring pipeline and adds industrial protocols, Edge integration, OT/IT security, and industrial asset modeling.
 
-## Business Use Case
+## 🏭 Business Use Case
 
-Smart Manufacturing Plant — Machine Health Monitoring.
+**Smart Manufacturing Plant — Machine Health Monitoring**
 
-The platform collects simulated industrial machine
-telemetry, processes operational events, and exposes
-machine health information through a monitoring dashboard.
+The platform simulates industrial assets, collects telemetry, detects rule-based anomalies, and exposes machine-health information through a monitoring dashboard.
 
-## Architecture Scope
+Initial simulated assets:
+- **M-101 / M-102:** electric motors
+- **P-101:** pump
+- **C-101:** conveyor
+- **F-101:** fan
+
+## 🏗️ Architecture
+
+```text
+Industrial Assets → PLC → SCADA/HMI → OPC UA Server
+                                      ↓
+                          Docker Edge Gateway
+                                      ↓
+                           SQLite Persistent Buffer
+                                      ↓ MQTT over TLS
+                         Industrial DMZ / Firewall
+                                      ↓
+                              Azure IoT Hub
+                                      ↓
+                            Azure Functions
+                                      ↓
+                    Azure Database for PostgreSQL
+                                      ↓
+                         DashboardService API
+                                      ↓
+                                   Grafana
+```
+
+Key design principles:
+- Local industrial control remains independent of cloud connectivity.
+- No direct Cloud-to-PLC control path.
+- Edge telemetry is buffered locally and replayed after reconnection.
+- Delivery is at-least-once; stable message IDs and cloud-side deduplication handle duplicates.
+- Infrastructure is managed with Terraform; CI/CD uses GitHub Actions.
+
+## 🧩 Architecture Scope
 
 - Industrial OT and Edge integration
-- OPC UA and MQTT
-- Azure IoT Hub and event-driven processing
-- Azure Functions and Cosmos DB
-- Industrial security and network segmentation
+- OPC UA and MQTT over TLS
+- Azure IoT Hub and event-driven processing with Azure Functions
+- PostgreSQL for operational telemetry and alarms
+- DashboardService API and Grafana
+- Industrial network segmentation and identity/security controls
 - Azure Enterprise Landing Zone integration
 - Infrastructure as Code with Terraform
-- Monitoring and operational visibility
-- Digital Twin concepts
+- Monitoring and operational visibility with Azure Monitor / Application Insights
 
-## Reuse Strategy
+Machine-learning-based predictive maintenance, Kubernetes, and additional data platforms are outside the initial implementation scope. Initial anomaly detection uses configurable rules.
 
-The existing EV Fleet Monitoring Platform is the
-technical baseline.
+## ♻️ Reuse Strategy
 
-Existing cloud ingestion, processing, persistence,
-monitoring, and CI/CD components will be reused or
-adapted where appropriate.
+The existing [EV Fleet Monitoring Platform](https://github.com/IbNdah/ev-fleet-monitoring-platform) is the technical baseline. Relevant cloud ingestion, processing, monitoring, and CI/CD patterns will be reused or adapted where appropriate.
 
-The objective is to focus implementation effort on
-the genuine industrial architecture gaps.
+The [Azure Enterprise Cloud Foundation](https://github.com/IbNdah/azure-enterprise-cloud-foundation) provides a reference for cloud governance and landing-zone practices.
 
-## Project Status
+The goal is to focus implementation effort on industrial-specific requirements rather than duplicate existing cloud foundations.
 
-- [x] Phase 0 — Project initialization
-- [ ] S1 — Architecture and gap validation
-- [ ] S2 — OPC UA and industrial asset simulation
-- [ ] S3 — Industrial Edge integration
-- [ ] S4 — Machine Health Monitoring
-- [ ] S5 — Industrial security architecture
-- [ ] S6 — Industrial Landing Zone integration
+## 📌 Project Status
 
-## Technology Stack
+- [x] S0 — Project initialization
+- [x] S1 — Architecture definition and gap review
+- [ ] S2 — Industrial asset simulator and OPC UA server
+- [ ] S3 — Industrial Edge Gateway and local buffering
+- [ ] S4 — Cloud ingestion and Machine Health Monitoring
+- [ ] S5 — Industrial security hardening and observability
+- [ ] S6 — Landing Zone integration and portfolio documentation
+
+## 🛠️ Technology Stack
 
 - Microsoft Azure
 - Python 3.11
-- MQTT / OPC UA
-- Terraform
+- OPC UA / MQTT
+- SQLite for Edge buffering
+- Azure IoT Hub and Azure Functions
+- Azure Database for PostgreSQL Flexible Server
 - Docker
+- Terraform
 - GitHub Actions
 - Grafana
 
-## Disclaimer
+## ⚠️ Scope and Deployment Status
 
-This is a learning and demonstration project.
-It does not control real industrial equipment and
-is not intended for production OT deployment.
+This repository documents an evolving industrial reference implementation. Components and capabilities are added and validated incrementally. The solution is not certified or validated for direct production OT deployment and does not control real industrial equipment.
