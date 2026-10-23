@@ -20,30 +20,40 @@ Initial simulated assets:
 
 ## 🏗️ Architecture
 
+Target architecture:
+
 ```text
-OT Zone
-  Industrial Assets → PLC / SCADA-HMI → OPC UA Server
-                                             ↑ OPC UA (read-only)
-Industrial DMZ                             Edge Gateway (Docker)
-                                             ↓ SQLite buffer
-                                             ↓ MQTT over TLS
-                                          Firewall
-                                             ↓
-Cloud Zone                              Azure IoT Hub
-                                             ↓
-                                       Azure Functions
-                                             ↓
-                                Azure Database for PostgreSQL
-                                             ↓
-                                     DashboardService API
-                                             ↓
-                                           Grafana
+┌──────────────────────── OT Zone ─────────────────────────┐
+│  Industrial Assets → PLC / SCADA-HMI → OPC UA Server     │
+│                                          ↑               │
+│                              OPC UA (read-only)          │
+└──────────────────────────────────────────┼───────────────┘
+                                           │
+┌──────────────────── Industrial DMZ ──────┼───────────────┐
+│  Edge Gateway (Docker) ──────────────────┘               │
+│       ↓                                                  │
+│  SQLite Persistent Buffer                                │
+│       ↓ MQTT over TLS                                    │
+│  Firewall / Controlled Egress                            │
+└───────────────────────────┬──────────────────────────────┘
+                            ↓
+┌──────────────────────── Cloud Zone ──────────────────────┐
+│  Azure IoT Hub                                           │
+│       ↓                                                  │
+│  Azure Functions                                         │
+│       ↓                                                  │
+│  Azure Database for PostgreSQL                           │
+│       ↓                                                  │
+│  DashboardService API                                    │
+│       ↓                                                  │
+│  Grafana                                                 │
+└──────────────────────────────────────────────────────────┘
 ```
 
 Key design principles:
 - Local industrial control remains independent of cloud connectivity.
 - No direct Cloud-to-PLC control path.
-- Edge telemetry is buffered locally and replayed after reconnection.
+- Edge telemetry is designed to be buffered locally and replayed after reconnection.
 - Delivery is at-least-once; stable message IDs and cloud-side deduplication handle duplicates.
 - Infrastructure is managed with Terraform; CI/CD uses GitHub Actions.
 
@@ -52,7 +62,7 @@ Key design principles:
 - Industrial OT and Edge integration
 - OPC UA and MQTT over TLS
 - Azure IoT Hub and event-driven processing with Azure Functions
-- PostgreSQL for asset data, operational telemetry, and anomaly events
+- PostgreSQL for operational telemetry and alarms
 - DashboardService API and Grafana
 - Industrial network segmentation and identity/security controls
 - Azure Enterprise Landing Zone integration
@@ -73,11 +83,18 @@ The goal is to focus implementation effort on industrial-specific requirements r
 
 - [x] S0 — Project initialization
 - [x] S1 — Architecture definition and gap review
-- [ ] S2 — Industrial asset simulator and OPC UA server
+- [x] S2 — Industrial asset simulator and OPC UA server
 - [ ] S3 — Industrial Edge Gateway and local buffering
 - [ ] S4 — Cloud ingestion and Machine Health Monitoring
 - [ ] S5 — Industrial security hardening and observability
 - [ ] S6 — Landing Zone integration and portfolio documentation
+
+**S2 implementation status:**
+- Five simulated industrial assets
+- OPC UA server exposing state, temperature, speed, and alarm variables
+- Read-only client access verified
+- Seven automated tests passing
+- OPC UA client connection and write rejection verified manually
 
 ## 🛠️ Technology Stack
 
