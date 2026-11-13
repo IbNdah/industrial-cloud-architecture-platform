@@ -41,6 +41,11 @@ Thumbs.db
 *.log
 
 # Local data
+data/
+*.db
+*.sqlite
+*.sqlite3
+
 data/local/
 ```
 
