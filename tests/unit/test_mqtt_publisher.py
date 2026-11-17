@@ -29,7 +29,7 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
         """Connect to the broker and start the network loop."""
         self.publisher.connect()
 
-        self.mqtt_client.connect.assert_called_once_with(
+        self.mqtt_client.connect_async.assert_called_once_with(
             "127.0.0.1",
             1883,
         )
@@ -200,6 +200,9 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
         self.buffer.get_pending = AsyncMock(return_value=messages)
         self.buffer.mark_sent = AsyncMock()
 
+        # Simulate a broker connection confirmed by Paho.
+        self.publisher._connected = True
+
         with patch.object(self.publisher, "_publish_message") as publish:
             published_count = await self.publisher.publish_pending()
 
@@ -217,6 +220,9 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
 
         self.buffer.get_pending = AsyncMock(return_value=messages)
         self.buffer.mark_sent = AsyncMock()
+
+        # Simulate a broker connection confirmed by Paho.
+        self.publisher._connected = True
 
         with patch.object(
             self.publisher,

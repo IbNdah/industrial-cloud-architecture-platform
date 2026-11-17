@@ -81,3 +81,18 @@ class IndustrialOPCUAClient:
     async def __aexit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         """Always close the connection when leaving the context."""
         await self.disconnect()
+
+    async def reconnect(self) -> None:
+        """Replace the current OPC UA session with a new connection."""
+        try:
+            # A lost network session may make the remote disconnect fail.
+            await self.disconnect()
+        except Exception as exc:
+            logger.warning("Error closing previous OPC UA session: %s", exc)
+
+            # Clear local state so connect() cannot reuse the failed session.
+            self._client = None
+            self._namespace_index = None
+
+        await self.connect()
+        logger.info("Reconnected to OPC UA server at %s", self.endpoint)

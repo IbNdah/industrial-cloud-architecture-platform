@@ -4,7 +4,7 @@ import unittest
 
 from asyncua import Server, ua
 
-from edge.industrial_gateway.opcua_server import build_address_space
+from simulator.industrial_assets.opcua_server import build_address_space
 
 
 class TestOpcUaAddressSpace(unittest.IsolatedAsyncioTestCase):
@@ -52,3 +52,4 @@ class TestOpcUaAddressSpace(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

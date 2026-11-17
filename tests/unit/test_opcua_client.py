@@ -1,7 +1,7 @@
 """Unit tests for the industrial OPC UA client."""
 
 import unittest
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from edge.industrial_gateway.opcua_client import IndustrialOPCUAClient
 
@@ -93,6 +93,72 @@ class TestIndustrialOPCUAClient(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(client._client)
         self.assertIsNone(client._namespace_index)
 
+    async def test_reconnect_creates_new_client_session(self):
+        """A new OPC UA session must be created after disconnecting."""
+        first_client = MagicMock()
+        first_client.connect = AsyncMock()
+        first_client.disconnect = AsyncMock()
+        first_client.get_namespace_index = AsyncMock(return_value=2)
+
+        second_client = MagicMock()
+        second_client.connect = AsyncMock()
+        second_client.disconnect = AsyncMock()
+        second_client.get_namespace_index = AsyncMock(return_value=2)
+
+        with patch(
+            "edge.industrial_gateway.opcua_client.Client",
+            side_effect=[first_client, second_client],
+        ) as mock_client:
+            client = IndustrialOPCUAClient()
+
+            await client.connect()
+
+            self.assertIs(client._client, first_client)
+            self.assertEqual(client._namespace_index, 2)
+
+            await client.disconnect()
+            await client.connect()
+
+            self.assertIs(client._client, second_client)
+            self.assertEqual(client._namespace_index, 2)
+
+        self.assertEqual(mock_client.call_count, 2)
+        first_client.connect.assert_awaited_once()
+        first_client.disconnect.assert_awaited_once()
+        second_client.connect.assert_awaited_once()
+
+    async def test_reconnect_replaces_lost_session(self):
+        """Reconnect should replace a session that can no longer disconnect."""
+        client = IndustrialOPCUAClient()
+
+        old_client = MagicMock()
+        old_client.disconnect = AsyncMock(
+            side_effect=ConnectionError("Session already lost")
+        )
+
+        new_client = MagicMock()
+        new_client.connect = AsyncMock()
+        new_client.get_namespace_index = AsyncMock(return_value=2)
+
+        # Simulate a session that still exists locally but is unavailable remotely.
+        client._client = old_client
+        client._namespace_index = 2
+
+        with patch(
+            "edge.industrial_gateway.opcua_client.Client",
+            return_value=new_client,
+        ) as mock_client:
+            await client.reconnect()
+
+        old_client.disconnect.assert_awaited_once()
+        new_client.connect.assert_awaited_once()
+        new_client.get_namespace_index.assert_awaited_once()
+
+        self.assertIs(client._client, new_client)
+        self.assertEqual(client._namespace_index, 2)
+        mock_client.assert_called_once_with(url=client.endpoint)
+
 
 if __name__ == "__main__":
     unittest.main()
+
