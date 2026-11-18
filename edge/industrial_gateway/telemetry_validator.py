@@ -7,7 +7,6 @@ from typing import Any, Mapping
 from edge.industrial_gateway.asset_registry import get_asset_config
 from edge.industrial_gateway.telemetry import TelemetrySnapshot
 
-
 SCHEMA_VERSION = "1.0"
 STOPPED_TEMPERATURE_MIN = 20.0
 
@@ -53,9 +52,7 @@ def normalize_telemetry(
         raise ValueError("alarm must be a boolean")
 
     if temperature > asset.temperature_max:
-        raise ValueError(
-            f"temperature exceeds the maximum for asset {asset_id}"
-        )
+        raise ValueError(f"temperature exceeds the maximum for asset {asset_id}")
 
     if state == "RUNNING" and temperature < asset.temperature_min:
         raise ValueError(

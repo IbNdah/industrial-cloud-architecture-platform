@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from pathlib import Path
 
 from asyncua import Server
 from asyncua.common.node import Node
@@ -87,13 +88,18 @@ async def main() -> None:
     asset_nodes = await build_address_space(server)
     simulator = IndustrialSimulator()
 
+    stop_signal_path = Path("data/runtime/opcua-server.stop")
+
     logger.info("Starting OPC UA server at %s", ENDPOINT)
 
     try:
         async with server:
-            while True:
+            while not stop_signal_path.exists():
                 await update_telemetry(asset_nodes, simulator)
                 await asyncio.sleep(UPDATE_INTERVAL_SECONDS)
+
+            logger.info("Stop signal detected, shustting down OPC UA server")
+
     finally:
         logger.info("OPC UA server stopped")
 

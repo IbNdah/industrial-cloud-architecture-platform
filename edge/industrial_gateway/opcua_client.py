@@ -95,4 +95,3 @@ class IndustrialOPCUAClient:
             self._namespace_index = None
 
         await self.connect()
-        logger.info("Reconnected to OPC UA server at %s", self.endpoint)

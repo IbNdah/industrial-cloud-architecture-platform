@@ -224,14 +224,50 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
         # Simulate a broker connection confirmed by Paho.
         self.publisher._connected = True
 
-        with patch.object(
-            self.publisher,
-            "_publish_message",
-            side_effect=TimeoutError("MQTT acknowledgement timeout"),
-        ), self.assertRaises(TimeoutError):
+        with (
+            patch.object(
+                self.publisher,
+                "_publish_message",
+                side_effect=TimeoutError("MQTT acknowledgement timeout"),
+            ),
+            self.assertRaises(TimeoutError),
+        ):
             await self.publisher.publish_pending()
 
         self.buffer.mark_sent.assert_not_awaited()
+
+    def test_on_disconnect_intentional(self):
+        with self.assertLogs(
+            "edge.industrial_gateway.mqtt_publisher",
+            level="INFO",
+        ) as captured:
+            self.publisher._disconnecting = True
+            self.publisher._on_disconnect(
+                self.mqtt_client,
+                None,
+                None,
+                mqtt.MQTT_ERR_SUCCESS,
+                None,
+            )
+
+        self.assertIn("MQTT connection intentionally closed", captured.output[0])
+        self.assertFalse(any("WARNING:" in entry for entry in captured.output))
+
+    def test_on_disconnect_unexpected(self):
+        with self.assertLogs(
+            "edge.industrial_gateway.mqtt_publisher",
+            level="WARNING",
+        ) as captured:
+            self.publisher._disconnecting = False
+            self.publisher._on_disconnect(
+                self.mqtt_client,
+                None,
+                None,
+                mqtt.MQTT_ERR_SUCCESS,
+                None,
+            )
+
+        self.assertIn("MQTT connection lost", captured.output[0])
 
     async def test_publish_pending_with_empty_buffer(self):
         """Return zero when no pending messages exist."""

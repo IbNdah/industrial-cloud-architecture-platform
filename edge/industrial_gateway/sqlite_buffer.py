@@ -27,8 +27,7 @@ class SQLiteTelemetryBuffer:
 
         await self._connection.execute("PRAGMA journal_mode = WAL")
         await self._connection.execute("PRAGMA busy_timeout = 5000")
-        await self._connection.execute(
-            """
+        await self._connection.execute("""
             CREATE TABLE IF NOT EXISTS telemetry_buffer (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 schema_version TEXT NOT NULL,
@@ -43,8 +42,7 @@ class SQLiteTelemetryBuffer:
                     CHECK (status IN ('PENDING', 'SENT')),
                 created_at TEXT NOT NULL
             )
-            """
-        )
+            """)
         await self._connection.commit()
 
     async def add(self, snapshot: TelemetrySnapshot) -> int:
@@ -95,15 +93,16 @@ class SQLiteTelemetryBuffer:
         )
         rows = await cursor.fetchall()
 
-        return [
-            {**dict(row), "alarm": bool(row["alarm"])}
-            for row in rows
-        ]
+        return [{**dict(row), "alarm": bool(row["alarm"])} for row in rows]
 
     async def mark_sent(self, message_id: int) -> bool:
         """Mark a buffered message as sent; return whether a row was updated."""
         connection = self._require_connection()
-        if isinstance(message_id, bool) or not isinstance(message_id, int) or message_id < 1:
+        if (
+            isinstance(message_id, bool)
+            or not isinstance(message_id, int)
+            or message_id < 1
+        ):
             raise ValueError("message_id must be a positive integer")
 
         cursor = await connection.execute(

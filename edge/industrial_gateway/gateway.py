@@ -3,6 +3,7 @@
 import asyncio
 import logging
 from datetime import UTC, datetime
+from pathlib import Path
 
 from edge.industrial_gateway.mqtt_publisher import MqttPublisher
 from edge.industrial_gateway.opcua_client import IndustrialOPCUAClient
@@ -34,6 +35,7 @@ class IndustrialGateway:
         )
 
         self._started = False
+        self.stop_signal_path = Path("data/runtime/gateway.stop")
 
     async def start(self) -> None:
         """Initialize storage and connect gateway components."""
@@ -64,19 +66,19 @@ class IndustrialGateway:
             ACQUISITION_INTERVAL_SECONDS,
         )
 
-        while True:
+        while not self.stop_signal_path.exists():
             try:
                 # Isolate OPC UA failures so MQTT delivery can continue.
                 raw_snapshots = await self.opcua_client.read_assets()
 
-            except Exception:
-                logger.exception("OPC UA acquisition failed")
+            except Exception as exc:
+                logger.warning("OPC UA acquisition failed: %s", exc)
 
                 try:
                     # Replace the failed session before the next acquisition cycle.
                     await self.opcua_client.reconnect()
-                except Exception:
-                    logger.exception("OPC UA reconnection failed")
+                except Exception as reconnect_error:
+                    logger.warning("OPC UA reconnection failed: %s", reconnect_error)
 
             else:
                 for raw_snapshot in raw_snapshots:
@@ -95,7 +97,7 @@ class IndustrialGateway:
                         )
                         continue
 
-                    # Persist before attempting delivery to preserve at-least-once behavior.
+                    # Persist before delivering to preserve at-least-once behavior.
                     await self.buffer.add(snapshot)
 
             try:
@@ -112,6 +114,8 @@ class IndustrialGateway:
                 logger.exception("MQTT delivery cycle failed")
 
             await asyncio.sleep(ACQUISITION_INTERVAL_SECONDS)
+
+        logger.info("Gateway stop signal detected")
 
     async def stop(self) -> None:
         """Disconnect components and release resources."""

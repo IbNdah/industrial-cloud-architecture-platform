@@ -1,11 +1,9 @@
 """Registry of industrial assets available to the Edge Gateway."""
 
-from simulator.industrial_assets.simulator import ASSETS
 from simulator.industrial_assets.models import AssetConfig
+from simulator.industrial_assets.simulator import ASSETS
 
-ASSETS_BY_ID: dict[str, AssetConfig] = {
-    asset.asset_id: asset for asset in ASSETS
-}
+ASSETS_BY_ID: dict[str, AssetConfig] = {asset.asset_id: asset for asset in ASSETS}
 
 
 def get_asset_config(asset_id: str) -> AssetConfig:

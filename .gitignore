@@ -46,7 +46,6 @@ data/
 *.sqlite
 *.sqlite3
 
-data/local/
 ```
 
 ### `.editorconfig`

@@ -37,6 +37,7 @@ class MqttPublisher:
         # Track network loop and broker connection separately.
         self._loop_started = False
         self._connected = False
+        self._disconnecting = False
 
         # Register callbacks and configure automatic reconnection.
         self.client.enable_logger(logger)
@@ -75,7 +76,11 @@ class MqttPublisher:
     ) -> None:
         """Update connection state after MQTT disconnection."""
         self._connected = False
-        logger.warning("MQTT connection lost: %s", reason_code)
+
+        if self._disconnecting:
+            logger.info("MQTT connection intentionally closed")
+        else:
+            logger.warning("MQTT connection lost: %s", reason_code)
 
     def connect(self) -> None:
         """Start asynchronous connection attempts and the network loop."""
@@ -97,6 +102,8 @@ class MqttPublisher:
         """Stop the network loop and disconnect from the broker."""
         if not self._loop_started:
             return
+
+        self._disconnecting = True
 
         try:
             self.client.disconnect()

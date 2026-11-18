@@ -1,0 +1,18 @@
+[tool.black]
+line-length = 88
+target-version = ['py311']
+extend-exclude = '''
+/(
+    \.venv
+  | data
+  | \.git
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+py_version = 311
+skip = [".venv", "data", ".git"]
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
