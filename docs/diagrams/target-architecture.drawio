@@ -1,0 +1,104 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="target-architecture" name="Target Architecture">
+    <mxGraphModel dx="1608" dy="902" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="z1" parent="1" style="swimlane;html=1;startSize=42;horizontal=1;rounded=1;fillColor=#EAF2FF;swimlaneFillColor=#FFFFFF;strokeColor=#7AA2D6;fontColor=#0F172A;fontSize=18;fontStyle=1;align=center;spacingLeft=14;collapsible=0;" value="OT ZONE" vertex="1">
+          <mxGeometry height="650" width="330" x="30" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="assets" parent="z1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FBFF;strokeColor=#4778B8;fontColor=#0F172A;fontSize=16;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;Industrial Assets&lt;/b&gt;&lt;br&gt;Motors · Pumps · Conveyors&lt;br&gt;Real equipment / PLC-connected" vertex="1">
+          <mxGeometry height="100" width="250" x="40" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="plc" parent="z1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FBFF;strokeColor=#4778B8;fontColor=#0F172A;fontSize=16;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;PLC / SCADA-HMI&lt;/b&gt;&lt;br&gt;Local control and supervision" vertex="1">
+          <mxGeometry height="85" width="250" x="40" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="z1" source="assets" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#4778B8;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="plc" value="Process signals">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="server" parent="z1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FBFF;strokeColor=#4778B8;fontColor=#0F172A;fontSize=16;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;OPC UA Server&lt;/b&gt;&lt;br&gt;Industrial data interface" vertex="1">
+          <mxGeometry height="85" width="250" x="40" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="z1" source="plc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#4778B8;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="server" value="Industrial data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="z2" parent="1" style="swimlane;html=1;startSize=42;horizontal=1;rounded=1;fillColor=#EAF7F0;swimlaneFillColor=#FFFFFF;strokeColor=#65A886;fontColor=#0F172A;fontSize=18;fontStyle=1;align=center;spacingLeft=14;collapsible=0;" value="INDUSTRIAL DMZ / EDGE" vertex="1">
+          <mxGeometry height="650" width="460" x="420" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="z3" parent="1" style="swimlane;html=1;startSize=42;horizontal=1;rounded=1;fillColor=#F1EDFF;swimlaneFillColor=#FFFFFF;strokeColor=#9276C8;fontColor=#0F172A;fontSize=18;fontStyle=1;align=center;spacingLeft=14;collapsible=0;" value="AZURE CLOUD ZONE" vertex="1">
+          <mxGeometry height="650" width="630" x="920" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="edgegw" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7FCF9;strokeColor=#39835F;fontColor=#0F172A;fontSize=16;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;Industrial Edge Gateway&lt;/b&gt;&lt;br&gt;OPC UA Client · Validation&lt;br&gt;Asset mapping · Acquisition lifecycle" vertex="1">
+          <mxGeometry height="115" width="350" x="475" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="buffer" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7FCF9;strokeColor=#39835F;fontColor=#0F172A;fontSize=16;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;SQLite Persistent Buffer&lt;/b&gt;&lt;br&gt;Store pending telemetry&lt;br&gt;Replay after connectivity recovery" vertex="1">
+          <mxGeometry height="95" width="350" x="475" y="365" as="geometry" />
+        </mxCell>
+        <mxCell id="transport" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7FCF9;strokeColor=#39835F;fontColor=#0F172A;fontSize=15;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;MQTT Transport&lt;/b&gt;&lt;br&gt;QoS 1 · TLS · Controlled egress&lt;br&gt;Identity and topic mapping to be defined" vertex="1">
+          <mxGeometry height="110" width="350" x="475" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="hub" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF8FF;strokeColor=#8064B4;fontColor=#0F172A;fontSize=16;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;Azure IoT Hub&lt;/b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;Device connectivity and telemetry ingestion&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="440" x="1010" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="functions" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF8FF;strokeColor=#8064B4;fontColor=#0F172A;fontSize=16;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;Azure Functions&lt;/b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;Event processing and validation&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="440" x="1010" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="postgres" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF8FF;strokeColor=#8064B4;fontColor=#0F172A;fontSize=16;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;Azure Database for PostgreSQL&lt;/b&gt;&lt;br&gt;Operational telemetry and alarm data" vertex="1">
+          <mxGeometry height="90" width="440" x="1010" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="api" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF8FF;strokeColor=#8064B4;fontColor=#0F172A;fontSize=15;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;Dashboard Service API&lt;/b&gt;&lt;br&gt;Query and application interface" vertex="1">
+          <mxGeometry height="90" width="210" x="996" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="grafana" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF8FF;strokeColor=#8064B4;fontColor=#0F172A;fontSize=15;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;Grafana&lt;/b&gt;&lt;br&gt;Machine health monitoring" vertex="1">
+          <mxGeometry height="90" width="210" x="1269" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="decision" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E8;strokeColor=#D6A64D;fontColor=#0F172A;fontSize=12;align=center;verticalAlign=middle;spacing=8;strokeWidth=1.5;" value="&lt;b&gt;S4 integration design decision&lt;/b&gt;&lt;br&gt;Validate IoT Hub MQTT authentication, topic mapping,&lt;br&gt;device identity and delivery semantics" vertex="1">
+          <mxGeometry height="65" width="590" x="938" y="665" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="server" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#4778B8;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="edgegw" value="OPC UA read-only">
+          <mxGeometry relative="1" x="0.7174" y="18" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="390" y="552.5" />
+              <mxPoint x="390" y="247.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="edgegw" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#39835F;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="buffer" value="Validated telemetry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="buffer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#39835F;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="transport" value="Pending messages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="transport" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8064B4;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" target="hub" value="MQTT / TLS, mapping TBD">
+          <mxGeometry relative="1" x="0.7064" y="15" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="900" y="575" />
+              <mxPoint x="900" y="215" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="hub" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8064B4;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="functions" value="Ingested events">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="functions" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8064B4;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="postgres" value="Processed records">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="postgres" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8064B4;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="api" value="Query data">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1100" y="540" />
+              <mxPoint x="1101" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="api" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8064B4;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#334155;labelBackgroundColor=#FFFFFF;" target="grafana" value="Dashboard data">
+          <mxGeometry relative="1" x="0.3968" y="15" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

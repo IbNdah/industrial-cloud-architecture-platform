@@ -23,58 +23,16 @@ The platform simulates industrial assets, collects operational telemetry, valida
 
 ## Architecture
 
-### Current implementation: Industrial Edge
+### Current Implementation
 
-```text
-┌──────────────────── Factory Floor (OT) ────────────────────┐
-│  Industrial Asset Simulator                                │
-│           ↓                                                │
-│  OPC UA Server                                             │
-└───────────┬────────────────────────────────────────────────┘
-            ↓ OPC UA (read-only)
-┌───────────┴──────────── Industrial Edge ────────────────────┐
-│  OPC UA Client                                              │
-│       ↓                                                    │
-│  Industrial Gateway                                        │
-│       ↓                                                    │
-│  Telemetry Validation                                      │
-│       ↓                                                    │
-│  SQLite Persistent Buffer                                  │
-│       ↓                                                    │
-│  MQTT Publisher (QoS 1)                                     │
-└─────── MQTT Broker ────────────────────────────────────────┘
-            ↓
-       Cloud Integration
-          (planned)
-```
+![Current Industrial Edge implementation](docs/diagrams/current-architecture.svg)
 
-### Target architecture: Industrial Cloud Integration
+### Target Architecture
 
-```text
-┌──────────────────── OT Zone ───────────────────────────────┐
-│  Industrial Assets → PLC / SCADA-HMI → OPC UA Server      │
-└──────────────────────────┬─────────────────────────────────┘
-                           ↓
-┌──────────────────── Industrial DMZ ────────────────────────┐
-│  Edge Gateway                                             │
-│       ↓                                                   │
-│  SQLite Persistent Buffer                                 │
-│       ↓                                                   │
-│  MQTT over TLS / Controlled Egress                        │
-└──────────────────────────┬─────────────────────────────────┘
-                           ↓
-┌──────────────────── Cloud Zone ────────────────────────────┐
-│  Azure IoT Hub                                             │
-│       ↓                                                   │
-│  Azure Functions                                           │
-│       ↓                                                   │
-│  Azure Database for PostgreSQL                             │
-│       ↓                                                   │
-│  Dashboard Service API                                     │
-│       ↓                                                   │
-│  Grafana                                                   │
-└────────────────────────────────────────────────────────────┘
-```
+![Target Industrial Cloud architecture](docs/diagrams/target-architecture.svg)
+
+The current diagram represents the implemented and tested S0-S3 scope. The target diagram represents the planned OT-to-cloud architecture. Azure connectivity details, including IoT Hub MQTT authentication and topic mapping, remain an S4 design decision.
+
 
 ## Architecture Principles
 
