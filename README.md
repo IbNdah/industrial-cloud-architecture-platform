@@ -1,114 +1,241 @@
 # Industrial Cloud Architecture Platform
 
-## 🎯 Overview
+## Overview
 
-An Azure-based industrial IoT reference implementation demonstrating secure OT-to-cloud integration for industrial asset monitoring.
+An industrial IoT reference implementation demonstrating secure OT-to-cloud integration for industrial asset monitoring.
 
-The platform builds on an existing Azure IoT monitoring pipeline and adds industrial protocols, Edge integration, OT/IT security, and industrial asset modeling.
+The platform focuses on industrial protocols, Edge computing, telemetry processing, local data persistence, and controlled communication between industrial environments and cloud platforms.
 
-## 🏭 Business Use Case
+The implementation builds on existing cloud architecture patterns and adapts them to industrial requirements.
 
-**Smart Manufacturing Plant — Machine Health Monitoring**
+## Business Use Case
 
-The platform simulates industrial assets, collects telemetry, detects rule-based anomalies, and exposes machine-health information through a monitoring dashboard.
+**Smart Manufacturing Plant: Machine Health Monitoring**
 
-Initial simulated assets:
-- **M-101 / M-102:** electric motors
-- **P-101:** pump
-- **C-101:** conveyor
-- **F-101:** fan
+The platform simulates industrial assets, collects operational telemetry, validates measurements, and prepares machine-health data for cloud-based monitoring.
 
-## 🏗️ Architecture
+| Asset ID | Industrial Asset |
+| --- | --- |
+| M-101 / M-102 | Electric motors |
+| P-101 | Pump |
+| C-101 | Conveyor |
+| F-101 | Fan |
 
-Target architecture:
+## Architecture
+
+### Current implementation: Industrial Edge
 
 ```text
-┌──────────────────────── OT Zone ─────────────────────────┐
-│  Industrial Assets → PLC / SCADA-HMI → OPC UA Server     │
-│                                          ↑               │
-│                              OPC UA (read-only)          │
-└──────────────────────────────────────────┼───────────────┘
-                                           │
-┌──────────────────── Industrial DMZ ──────┼───────────────┐
-│  Edge Gateway (Docker) ──────────────────┘               │
-│       ↓                                                  │
-│  SQLite Persistent Buffer                                │
-│       ↓ MQTT over TLS                                    │
-│  Firewall / Controlled Egress                            │
-└───────────────────────────┬──────────────────────────────┘
-                            ↓
-┌──────────────────────── Cloud Zone ──────────────────────┐
-│  Azure IoT Hub                                           │
-│       ↓                                                  │
-│  Azure Functions                                         │
-│       ↓                                                  │
-│  Azure Database for PostgreSQL                           │
-│       ↓                                                  │
-│  DashboardService API                                    │
-│       ↓                                                  │
-│  Grafana                                                 │
-└──────────────────────────────────────────────────────────┘
+┌──────────────────── Factory Floor (OT) ────────────────────┐
+│  Industrial Asset Simulator                                │
+│           ↓                                                │
+│  OPC UA Server                                             │
+└───────────┬────────────────────────────────────────────────┘
+            ↓ OPC UA (read-only)
+┌───────────┴──────────── Industrial Edge ────────────────────┐
+│  OPC UA Client                                              │
+│       ↓                                                    │
+│  Industrial Gateway                                        │
+│       ↓                                                    │
+│  Telemetry Validation                                      │
+│       ↓                                                    │
+│  SQLite Persistent Buffer                                  │
+│       ↓                                                    │
+│  MQTT Publisher (QoS 1)                                     │
+└─────── MQTT Broker ────────────────────────────────────────┘
+            ↓
+       Cloud Integration
+          (planned)
 ```
 
-Key design principles:
-- Local industrial control remains independent of cloud connectivity.
-- No direct Cloud-to-PLC control path.
-- Edge telemetry is designed to be buffered locally and replayed after reconnection.
-- Delivery is at-least-once; stable message IDs and cloud-side deduplication handle duplicates.
-- Infrastructure is managed with Terraform; CI/CD uses GitHub Actions.
+### Target architecture: Industrial Cloud Integration
 
-## 🧩 Architecture Scope
+```text
+┌──────────────────── OT Zone ───────────────────────────────┐
+│  Industrial Assets → PLC / SCADA-HMI → OPC UA Server      │
+└──────────────────────────┬─────────────────────────────────┘
+                           ↓
+┌──────────────────── Industrial DMZ ────────────────────────┐
+│  Edge Gateway                                             │
+│       ↓                                                   │
+│  SQLite Persistent Buffer                                 │
+│       ↓                                                   │
+│  MQTT over TLS / Controlled Egress                        │
+└──────────────────────────┬─────────────────────────────────┘
+                           ↓
+┌──────────────────── Cloud Zone ────────────────────────────┐
+│  Azure IoT Hub                                             │
+│       ↓                                                   │
+│  Azure Functions                                           │
+│       ↓                                                   │
+│  Azure Database for PostgreSQL                             │
+│       ↓                                                   │
+│  Dashboard Service API                                     │
+│       ↓                                                   │
+│  Grafana                                                   │
+└────────────────────────────────────────────────────────────┘
+```
 
-- Industrial OT and Edge integration
-- OPC UA and MQTT over TLS
-- Azure IoT Hub and event-driven processing with Azure Functions
-- PostgreSQL for operational telemetry and alarms
-- DashboardService API and Grafana
-- Industrial network segmentation and identity/security controls
-- Azure Enterprise Landing Zone integration
-- Infrastructure as Code with Terraform
-- Monitoring and operational visibility with Azure Monitor / Application Insights
+## Architecture Principles
 
-Machine-learning-based predictive maintenance, Kubernetes, and additional data platforms are outside the initial implementation scope. Initial anomaly detection uses configurable rules.
+| Principle | Implementation |
+| --- | --- |
+| OT autonomy | Local industrial control remains independent of cloud connectivity |
+| Read-only acquisition | OPC UA is used for telemetry acquisition, without a cloud-to-PLC control path |
+| Local resilience | SQLite buffers telemetry during broker interruptions |
+| Message delivery | MQTT QoS 1 provides at-least-once delivery |
+| Duplicate handling | Cloud-side idempotency and deduplication are required |
+| Separation of concerns | Edge acquisition and cloud processing remain independent |
 
-## ♻️ Reuse Strategy
+## Implemented Capabilities
 
-The existing [EV Fleet Monitoring Platform](https://github.com/IbNdah/ev-fleet-monitoring-platform) is the technical baseline. Relevant cloud ingestion, processing, monitoring, and CI/CD patterns will be reused or adapted where appropriate.
+### Industrial Simulator and OPC UA
 
-The [Azure Enterprise Cloud Foundation](https://github.com/IbNdah/azure-enterprise-cloud-foundation) provides a reference for cloud governance and landing-zone practices.
+| Capability | Description |
+| --- | --- |
+| Asset simulation | Five simulated industrial assets |
+| OPC UA address space | State, temperature, speed, and alarm variables |
+| Read-only access | Verified through an OPC UA client |
+| Telemetry updates | Periodic updates generated by the simulator |
 
-The goal is to focus implementation effort on industrial-specific requirements rather than duplicate existing cloud foundations.
+### Industrial Edge Gateway
 
-## 📌 Project Status
+| Component | Responsibility |
+| --- | --- |
+| OPC UA Client | Connects to the industrial OPC UA server and reads asset data |
+| Asset Registry | Maps asset identifiers to their industrial types |
+| Telemetry Validator | Validates and normalizes acquired measurements |
+| SQLite Buffer | Persists pending telemetry locally |
+| MQTT Publisher | Publishes telemetry using QoS 1 |
+| Gateway Runtime | Coordinates acquisition, persistence, publication, and shutdown |
 
-- [x] S0 — Project initialization
-- [x] S1 — Architecture definition and gap review
-- [x] S2 — Industrial asset simulator and OPC UA server
-- [ ] S3 — Industrial Edge Gateway and local buffering
-- [ ] S4 — Cloud ingestion and Machine Health Monitoring
-- [ ] S5 — Industrial security hardening and observability
-- [ ] S6 — Landing Zone integration and portfolio documentation
+### Resilience and Lifecycle
 
-**S2 implementation status:**
-- Five simulated industrial assets
-- OPC UA server exposing state, temperature, speed, and alarm variables
-- Read-only client access verified
-- Seven automated tests passing
-- OPC UA client connection and write rejection verified manually
+| Capability | Behavior |
+| --- | --- |
+| OPC UA reconnection | Attempts to restore the connection after acquisition failures |
+| MQTT reconnection | Automatically reconnects after broker interruptions |
+| Message recovery | Publishes pending messages after broker availability returns |
+| Controlled shutdown | Stops the Gateway before closing the OPC UA server |
+| Persistent buffering | Retains pending messages in SQLite across interruptions |
 
-## 🛠️ Technology Stack
+## Testing and Quality
 
-- Microsoft Azure
+| Validation | Result |
+| --- | ---: |
+| Automated tests | 63 passed |
+| Subtests | 17 passed |
+| Overall code coverage | 91% |
+| Black | Passed |
+| isort | Passed |
+| Flake8 | Passed |
+| OPC UA integration | Passed |
+| Gateway-to-MQTT integration | Passed |
+
+Manual checks additionally validate MQTT connectivity, broker interruption, and message recovery.
+
+## Project Status
+
+| Phase | Description | Status |
+| --- | --- | --- |
+| S0 | Project initialization | Complete |
+| S1 | Architecture definition and gap review | Complete |
+| S2 | Industrial asset simulator and OPC UA server | Complete |
+| S3 | Industrial Edge Gateway and local buffering | Complete |
+| S4 | Cloud ingestion and machine-health monitoring | Planned |
+| S5 | Industrial security hardening and observability | Planned |
+| S6 | Landing Zone integration and portfolio documentation | Planned |
+
+## Technology Stack
+
+### Implemented
+
+| Area | Technology |
+| --- | --- |
+| Programming | Python 3.11 |
+| Industrial communication | OPC UA (`asyncua`) |
+| Messaging | MQTT (`paho-mqtt`) |
+| MQTT Broker | Eclipse Mosquitto |
+| Local persistence | SQLite (`aiosqlite`) |
+| Testing | Pytest |
+| Code formatting | Black |
+| Import sorting | isort |
+| Static analysis | Flake8 |
+
+### Planned
+
+| Area | Technology |
+| --- | --- |
+| Cloud platform | Microsoft Azure |
+| IoT ingestion | Azure IoT Hub |
+| Event processing | Azure Functions |
+| Operational database | Azure Database for PostgreSQL |
+| Containerization | Docker |
+| Infrastructure as Code | Terraform |
+| CI/CD | GitHub Actions |
+| Visualization | Grafana |
+| Monitoring | Azure Monitor / Application Insights |
+
+## Local Development
+
+### Prerequisites
+
 - Python 3.11
-- OPC UA / MQTT
-- SQLite for Edge buffering
-- Azure IoT Hub and Azure Functions
-- Azure Database for PostgreSQL Flexible Server
-- Docker
-- Terraform
-- GitHub Actions
-- Grafana
+- Eclipse Mosquitto MQTT Broker
+- Windows PowerShell
 
-## ⚠️ Scope and Deployment Status
+### Installation
 
-This repository documents an evolving industrial reference implementation. Components and capabilities are added and validated incrementally. The solution is not certified or validated for direct production OT deployment and does not control real industrial equipment.
+Create and activate a virtual environment:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
+
+```powershell
+pip install -r requirements-dev.txt
+```
+
+### Environment Management
+
+```powershell
+.\scripts\dev-environment.ps1 start
+.\scripts\dev-environment.ps1 status
+.\scripts\dev-environment.ps1 stop
+```
+
+### Quality Checks
+
+```powershell
+.\scripts\quality-check.ps1
+```
+
+### Tests with Coverage
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/ -v `
+    --cov=edge.industrial_gateway `
+    --cov=simulator.industrial_assets `
+    --cov-report=term-missing `
+    --cov-report=html
+```
+
+## Reuse Strategy
+
+| Reference Project | Reusable Capabilities |
+| --- | --- |
+| [EV Fleet Monitoring Platform](https://github.com/IbNdah/ev-fleet-monitoring-platform) | Cloud ingestion, telemetry processing, monitoring, and CI/CD patterns |
+| [Azure Enterprise Cloud Foundation](https://github.com/IbNdah/azure-enterprise-cloud-foundation) | Cloud governance and Landing Zone architecture |
+
+The objective is to reuse established cloud capabilities while focusing implementation effort on industrial-specific requirements.
+
+## Scope and Deployment Status
+
+This repository documents an evolving industrial reference implementation.
+
+The current Edge implementation is validated using simulated industrial assets and local infrastructure. Cloud integration and production-grade security hardening remain future development activities.
+
+The platform is not certified for production OT deployment and does not control real industrial equipment.
