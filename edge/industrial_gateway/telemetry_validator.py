@@ -1,13 +1,14 @@
 """Validation and normalization of telemetry received from OPC UA."""
 
-from datetime import datetime, timezone
+from collections.abc import Mapping
+from datetime import UTC, datetime
 from math import isfinite
-from typing import Any, Mapping
+from typing import Any
 
 from edge.industrial_gateway.asset_registry import get_asset_config
 from edge.industrial_gateway.telemetry import TelemetrySnapshot
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 STOPPED_TEMPERATURE_MIN = 20.0
 
 
@@ -70,11 +71,12 @@ def normalize_telemetry(
     if state == "STOPPED" and speed != 0.0:
         raise ValueError("speed must be zero when the asset is STOPPED")
 
+    # Creating the snapshot also assigns its stable message ID.
     return TelemetrySnapshot(
         schema_version=SCHEMA_VERSION,
         asset_id=asset.asset_id,
         asset_type=asset.asset_type,
-        observed_at=observed_at.astimezone(timezone.utc),
+        observed_at=observed_at.astimezone(UTC),
         state=state,
         temperature=temperature,
         speed=speed,

@@ -2,14 +2,14 @@
 
 import math
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from edge.industrial_gateway.telemetry_validator import normalize_telemetry
 
 
 class TelemetryValidatorTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.observed_at = datetime(2026, 11, 3, 12, 0, tzinfo=timezone.utc)
+        self.observed_at = datetime(2026, 11, 3, 12, 0, tzinfo=UTC)
         self.valid_reading = {
             "assetId": "M-101",
             "state": "RUNNING",
@@ -21,7 +21,7 @@ class TelemetryValidatorTests(unittest.TestCase):
     def test_normalizes_valid_reading(self) -> None:
         snapshot = normalize_telemetry(self.valid_reading, self.observed_at)
 
-        self.assertEqual(snapshot.schema_version, "1.0")
+        self.assertEqual(snapshot.schema_version, "1.1")
         self.assertEqual(snapshot.asset_id, "M-101")
         self.assertEqual(snapshot.asset_type, "electric_motor")
         self.assertEqual(snapshot.state, "RUNNING")

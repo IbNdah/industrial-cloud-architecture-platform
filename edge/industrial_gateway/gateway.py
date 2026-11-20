@@ -2,9 +2,11 @@
 
 import asyncio
 import logging
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
+from edge.industrial_gateway.config import GatewayConfig
 from edge.industrial_gateway.mqtt_publisher import MqttPublisher
 from edge.industrial_gateway.opcua_client import IndustrialOPCUAClient
 from edge.industrial_gateway.sqlite_buffer import SQLiteTelemetryBuffer
@@ -21,21 +23,34 @@ class IndustrialGateway:
     def __init__(
         self,
         opcua_endpoint: str = "opc.tcp://127.0.0.1:4840/industrial/",
-        mqtt_host: str = "127.0.0.1",
-        mqtt_port: int = 1883,
+        mqtt_host: str | None = None,
+        mqtt_port: int | None = None,
         database_path: str = "data/edge_buffer.db",
+        config: GatewayConfig | None = None,
     ) -> None:
-        # Instantiate the components without opening connections.
+
+        # Load environment configuration unless explicit configuration is supplied.
+        self.config = config or GatewayConfig.from_env()
+
+        # Preserve compability with existing local MQTT callers and Integration tests.
+        if mqtt_host is not None or mqtt_port is not None:
+            self.config = replace(
+                self.config,
+                mqtt_host=mqtt_host or self.config.mqtt_host,
+                mqtt_port=mqtt_port or self.config.mqtt_port,
+            )
+
         self.opcua_client = IndustrialOPCUAClient(endpoint=opcua_endpoint)
         self.buffer = SQLiteTelemetryBuffer(database_path=database_path)
+
+        # Pass the complete configuration so the publisher can select it transport.
         self.publisher = MqttPublisher(
             buffer=self.buffer,
-            host=mqtt_host,
-            port=mqtt_port,
+            config=self.config,
         )
 
         self._started = False
-        self.stop_signal_path = Path("data/runtime/gateway.stop")
+        self.stop_signal_path = Path("data/runtime/gateway_stop")
 
     async def start(self) -> None:
         """Initialize storage and connect gateway components."""

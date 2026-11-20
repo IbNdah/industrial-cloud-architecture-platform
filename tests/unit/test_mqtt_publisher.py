@@ -25,6 +25,22 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
 
         self.publisher = MqttPublisher(buffer=self.buffer)
 
+    def _create_message(self):
+        """Return a telemetry message using the current contract."""
+        return {
+            "id": 1,
+            "schema_version": "1.1",
+            "message_id": "7f83a9d2-1234-4567-8901-123456789abc",
+            "asset_id": "M-101",
+            "asset_type": "electric_motor",
+            "observed_at": "2026-11-10T10:00:00Z",
+            "state": "RUNNING",
+            "temperature": 65.5,
+            "speed": 1450.0,
+            "alarm": False,
+            "status": "PENDING",
+        }
+
     def test_connect(self):
         """Connect to the broker and start the network loop."""
         self.publisher.connect()
@@ -53,19 +69,8 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
         self.mqtt_client.loop_stop.assert_not_called()
 
     def test_publish_message(self):
-        """Publish a JSON payload with QoS 1 and no retention."""
-        message = {
-            "id": 1,
-            "schema_version": "1.0",
-            "asset_id": "M-101",
-            "asset_type": "electric_motor",
-            "observed_at": "2026-11-10T10:00:00Z",
-            "state": "RUNNING",
-            "temperature": 65.5,
-            "speed": 1450.0,
-            "alarm": False,
-            "status": "PENDING",
-        }
+        """Publish the complete telemetry payload with QoS 1."""
+        message = self._create_message()
 
         result = MagicMock()
         result.rc = mqtt.MQTT_ERR_SUCCESS
@@ -86,7 +91,8 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             json.loads(payload),
             {
-                "schema_version": "1.0",
+                "schema_version": "1.1",
+                "message_id": message["message_id"],
                 "asset_id": "M-101",
                 "asset_type": "electric_motor",
                 "observed_at": "2026-11-10T10:00:00Z",
@@ -104,16 +110,7 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
 
     def test_publish_message_local_error(self):
         """Raise an error when Paho rejects the publish request."""
-        message = {
-            "asset_id": "M-101",
-            "schema_version": "1.0",
-            "asset_type": "electric_motor",
-            "observed_at": "2026-11-10T10:00:00Z",
-            "state": "RUNNING",
-            "temperature": 65.5,
-            "speed": 1450.0,
-            "alarm": False,
-        }
+        message = self._create_message()
 
         result = MagicMock()
         result.rc = mqtt.MQTT_ERR_NO_CONN
@@ -126,16 +123,7 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
 
     def test_publish_message_timeout(self):
         """Raise an error when the broker acknowledgement is missing."""
-        message = {
-            "asset_id": "M-101",
-            "schema_version": "1.0",
-            "asset_type": "electric_motor",
-            "observed_at": "2026-11-10T10:00:00Z",
-            "state": "RUNNING",
-            "temperature": 65.5,
-            "speed": 1450.0,
-            "alarm": False,
-        }
+        message = self._create_message()
 
         result = MagicMock()
         result.rc = mqtt.MQTT_ERR_SUCCESS
@@ -150,16 +138,7 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
 
     def test_publish_message_runtime_error(self):
         """Convert Paho runtime errors into connection errors."""
-        message = {
-            "asset_id": "M-101",
-            "schema_version": "1.0",
-            "asset_type": "electric_motor",
-            "observed_at": "2026-11-10T10:00:00Z",
-            "state": "RUNNING",
-            "temperature": 65.5,
-            "speed": 1450.0,
-            "alarm": False,
-        }
+        message = self._create_message()
 
         result = MagicMock()
         result.rc = mqtt.MQTT_ERR_SUCCESS
@@ -171,16 +150,7 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
 
     def test_publish_message_value_error(self):
         """Convert Paho queue errors into connection errors."""
-        message = {
-            "asset_id": "M-101",
-            "schema_version": "1.0",
-            "asset_type": "electric_motor",
-            "observed_at": "2026-11-10T10:00:00Z",
-            "state": "RUNNING",
-            "temperature": 65.5,
-            "speed": 1450.0,
-            "alarm": False,
-        }
+        message = self._create_message()
 
         result = MagicMock()
         result.rc = mqtt.MQTT_ERR_SUCCESS
@@ -200,7 +170,6 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
         self.buffer.get_pending = AsyncMock(return_value=messages)
         self.buffer.mark_sent = AsyncMock()
 
-        # Simulate a broker connection confirmed by Paho.
         self.publisher._connected = True
 
         with patch.object(self.publisher, "_publish_message") as publish:
@@ -221,7 +190,6 @@ class TestMqttPublisher(unittest.IsolatedAsyncioTestCase):
         self.buffer.get_pending = AsyncMock(return_value=messages)
         self.buffer.mark_sent = AsyncMock()
 
-        # Simulate a broker connection confirmed by Paho.
         self.publisher._connected = True
 
         with (

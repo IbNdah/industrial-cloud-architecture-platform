@@ -157,7 +157,9 @@ class TestGatewayMqttIntegration(unittest.IsolatedAsyncioTestCase):
                             topic,
                             f"industrial/assets/{asset_id}/telemetry",
                         )
-                        self.assertEqual(payload["schema_version"], "1.0")
+                        self.assertEqual(payload["schema_version"], "1.1")
+                        self.assertIsInstance(payload["message_id"], str)
+                        self.assertEqual(payload["asset_id"], asset_id)
                         self.assertIn(payload["state"], {"RUNNING", "STOPPED"})
                         self.assertIsInstance(payload["temperature"], float)
                         self.assertIsInstance(payload["speed"], float)
